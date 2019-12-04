@@ -1136,6 +1136,23 @@
 %
 \def\ead@hrefprefix@orcid{https://orcid.org/}
 %
+\AtBeginDocument{%
+  \def\ead@sep{}
+  \def\ead@list@sep{,\ }
+  \def\ead@m@sep{}
+  \def\ead@prefixsep{}
+  \def\ead@prefix@fax{}
+  \def\ead@prefix@url{}
+  \def\ead@prefix@email{}
+  \def\ead@prefix@phone{}
+  \def\ead@prefix@orcid{}
+  \def\ead@prefix@m@fax{}
+  \def\ead@prefix@m@url{}
+  \def\ead@prefix@m@email{}
+  \def\ead@prefix@m@phone{}
+  \def\ead@prefix@m@orcid{}
+  }
+%
 % ADDRESS
 %
 \newdimen\b@address@skip
