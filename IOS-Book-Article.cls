@@ -39,7 +39,28 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2006/04/20 v1.0, IOS Press]
+              [2019/12/04 v1.11, IOS Press, VTEX]
+
+\IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
+
+%% in case of tex4ht wf all processing is redirected to the class iosbook2x.cls, this class (IOS-Book-Article.cls) acts just as an ordinary project driver class 
+\ifdefined\HCode
+  \def\fmt@name{IOS-Book-Article}%
+  \def\max@chapter@number{10}%
+  %
+  \DeclareOption*{\PassOptionsToClass{\CurrentOption}{iosbook2x}}%
+  \ProcessOptions*
+  %
+  \LoadClass[onecolumn]{iosbook2x}%
+  \endinput
+\else
+  \ifdefined\vtex@in@house
+    % {etoolbox} is not compatible with {bm} package (\@@end usage)
+    \RequirePackage{etoolbox-2.2a}%
+    \ProvidesFile{etoolbox.sty}%
+  \fi
+\fi
+\RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
 
 \newif\if@restonecol \@restonecolfalse
 \newif\if@openright
@@ -67,6 +88,12 @@
 \DeclareOption{10pt}{\@ten@pointtrue}
 \DeclareOption{12pt}{\@ten@pointfalse}
 
+\AtBeginDocument{\def\languagename{english}}
+\DeclareOption{english}{\AtBeginDocument{\def\languagename{english}}}
+\DeclareOption{ngerman}{\AtBeginDocument{\def\languagename{ngerman}}}
+\DeclareOption{spanish}{\AtBeginDocument{\def\languagename{spanish}}}
+\DeclareOption{french}{\AtBeginDocument{\def\languagename{french}}}
+
 % Information about the publication
 \def\booktitle#1{\gdef\book@title{#1}}
 \def\bookeditors#1{\gdef\book@editors{#1}}
@@ -77,7 +104,7 @@
 \publisher{IOS Press}
 
 \ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn}
-\ProcessOptions
+\ProcessOptions*
 %
 
 %************************* FONTS
@@ -188,8 +215,18 @@
 \divide\@tempdima by2
 \setlength\topmargin  {\@tempdima}%
 
+%************************* LOADING PACKAGES:
+\ifdefined\vtex@in@house
+  \RequirePackage{pagecrop}%
 
+% FRONT MATTER MACROS
+  \RequirePackage{vtexfm}%
 
+  \RequirePackage{vtexurl}%
+
+%%%% >>> From iosart2x.cls >>>
+  \RequirePackage{vkt-cmn-md}%
+\fi
 
 % BREAKS
 \setlength\smallskipamount{6\p@ \@plus 1\p@ \@minus 1\p@}
@@ -829,6 +866,10 @@
 %
 % ENDFRONTMATTER
 %
+\newskip\abstract@skip \abstract@skip=18\p@
+\newskip\keywords@skip \keywords@skip=6\p@
+\newskip\keywords@noabs@skip \keywords@noabs@skip=10\p@
+%
 \def\endfrontmatter{%
   \global\n@author=\c@author \@writecount
   \global\@topnum\z@
@@ -844,15 +885,67 @@
   \fi
   \if@hasabstract
     \normal@text
-    \vskip 18\p@
+    \vskip\abstract@skip
     \centering
-    \leavevmode\box\t@abstract\par
+    \leavevmode
+    \ifdim\ht\t@abstract>\textheight\relax
+      \newbox\t@abstract@first
+      \setbox\t@abstract@first\vsplit\t@abstract to \textheight\relax
+      \box\t@abstract@first
+      \eject
+    \fi
+    \box\t@abstract\par
   \fi
   \if@haskeywords
     \normal@text
-    \if@hasabstract \vskip6pt\else\vskip18pt\fi    
+    \if@hasabstract
+      \vskip\keywords@skip
+    \else
+      \vskip\keywords@noabs@skip
+    \fi
     \centering
     \leavevmode\box\t@keywords\par
+  \fi
+  \ifdefined\@transabstractlang\relax
+    \normal@text
+    \if@hasabstract
+      \vskip\keywords@skip
+    \else
+      \if@haskeywords
+        \vskip\keywords@skip
+      \else
+        \vskip\abstract@skip
+      \fi
+    \fi
+    \centering
+    \leavevmode
+    \ifdim\ht\t@transabstract>\textheight\relax
+      \newbox\t@transabstract@first
+      \setbox\t@transabstract@first\vsplit\t@transabstract to \textheight\relax
+      \box\t@transabstract@first
+      \eject
+    \fi
+    \box\t@transabstract
+    \par
+  \fi
+  \ifdefined\@transkeywordslang\relax
+    \if@hasabstract
+      \vskip\keywords@skip
+    \else
+      \ifdefined\@transabstractlang\relax
+        \vskip\keywords@skip
+      \else
+        \if@haskeywords
+          \vskip\keywords@skip
+        \else
+          \vskip\keywords@noabs@skip
+        \fi
+      \fi
+    \fi
+    \centering
+    \leavevmode
+    \box\t@transkeywords
+    \par
   \fi
   \close@fm
   \if@twocolumn\output@glob@notes\fi
@@ -948,6 +1041,14 @@
   \title@fmt{\@title}{\title@notes}%
   \ignorespaces}
 %
+\newcommand\transtitle[2][\languagename]{%
+  \gdef\@transtitlelang{#1}%
+  \gdef\@transtitle{#2}%
+  \title@size\center
+  \@transtitle
+  \par
+  }
+%
 \newdimen\@@topskip \@@topskip=24\p@
 %
 \def\title@fmt#1#2{%
@@ -1017,8 +1118,28 @@
 \def\sxarabic#1{%
         \expandafter\ifcase\value{#1} \or *\or **\or *** \or **** \or *****\fi
 }
+
+\def\collab#1{\author{\snm{#1}}}
+
+%
+% EMAIL
+%
+\ifdefined\vtex@in@house
+  \RequirePackage{printead}%
+  \def\ead@href#1#2{\href{#1}{#2}}%
+  \appto\@setead@hook{%
+    \protected\def\textasciitilde{\noexpand\textasciitilde}%
+    \protected\def\texttildelow{\noexpand\texttildelow}%
+    \protected\def\textunderscore{\noexpand\textunderscore}%
+    }%
+\fi
+%
+\def\ead@hrefprefix@orcid{https://orcid.org/}
 %
 % ADDRESS
+%
+\newdimen\b@address@skip
+\b@address@skip=6\p@
 %
 \def\email#1{{e-mail:\ #1}}
 %
@@ -1065,32 +1186,107 @@
   \par
   \vskip 2\p@ plus 1\p@ minus 1\p@}
 %
+\def\institution#1{#1}
+\def\city#1{#1}
+\def\state#1{#1}
+\def\cny#1{#1}
+
+% IOS book layout for address output (based on COM journal style)
+\def\init@book@author@address@block@fmt{%
+  \let\ioscom@author@optarg\author@optarg
+  \def\author@optarg[##1]##2{%
+    \ioscom@author@optarg[##1]{##2}%
+    \ifx.##1.\ioscom@printaddress{}\else\@for\@tempa:=##1\do{\ioscom@printaddress\@tempa}\fi\endgraf
+    }%
+  \def\ioscom@printaddress##1{%
+    \ifnum\stablecompilecount>\z@
+      \@ifundefined{ioscom@##1@address}%
+        {\ClassError{iosart2x}{There is no address with label '##1'}\@ehc}%
+        {{\vskip\b@address@skip\address@size\@nameuse{ioscom@##1@address}\endgraf}}%
+    \fi
+    }%
+  \let\add@addressref\@gobble
+  \def\address{\@ifnextchar[{\ioscom@address}{\ioscom@address[]}}%
+  \def\ioscom@address[##1]##2{%
+    \def\ioscom@tmp{##2}%
+    \protected@write\@auxout{}{\string\global\string\@namedef{ioscom@##1@address}{\expandafter\strip@prefix\meaning\ioscom@tmp}}%
+    }%
+  }
+%
 % ABSTRACT
+%
+\newcommand\abstractname{\csname abstractname@\languagename\endcsname}
+\newcommand\abstractname@fmt[1]{\textbf{#1\abstractname@sep}}
 %
 \def\abstract{\@ifnextchar[{\@abstract}{\@abstract[]}}
 \def\@abstract[#1]{%
+  \def\parttitle##1{%
+    \endgraf
+    \noindent
+    {\bfseries\MakeUppercase{##1}:}%
+    }%
   \global\@hasabstracttrue
   \hyphenpenalty\sv@hyphenpenalty
   \global\setbox\t@abstract=\vbox\bgroup
-  \linewidth\abstract@width
-  \hsize\abstract@width
-  \justify@on\abstract@size\parindent 1em
-  \abstract@indent\textbf{\abstractname}\ignorespaces}
-\def\endabstract{\par\egroup}
+    \linewidth\abstract@width
+    \hsize\abstract@width
+    \justify@on\abstract@size\parindent 1em
+    \abstract@indent
+    \abstractname@fmt{\abstractname}%
+    \ignorespaces
+  }
+\def\endabstract{%
+    \par
+  \egroup
+  }
+%
+\newenvironment{transabstract}[1][\languagename]{%
+    \global\def\@transabstractlang{#1}%
+    \global\def\transabstractname{\csname abstractname@#1\endcsname}%
+    \newbox\t@transabstract
+    \global\setbox\t@transabstract=\vbox\bgroup
+      \linewidth\abstract@width
+      \hsize\abstract@width
+      \justify@on\abstract@size\parindent 1em
+      \abstract@indent
+      \abstractname@fmt{\csname abstractname@#1\endcsname}%
+      \ignorespaces
+  }{%
+      \par
+    \egroup
+  }
 %
 % KEYWORDS
-\def\sep{\unskip, }
+%
+\newcommand\keywordsname{\csname keywordsname@\languagename\endcsname}
+\newcommand\keywordsname@fmt[1]{\textbf{#1\keywordsname@sep}}
+%
 \global\@haskeywordsfalse
 \newdimen\dp@t@keywords
 \def\keyword{\global\@haskeywordstrue%
   \global\setbox\t@keywords=\vbox\bgroup%
   \hsize\abstract@width%
   \justify@on\abstract@size\parindent 0\p@
-  \textbf{\keywordsname}\ignorespaces
+  \keywordsname@fmt{\keywordsname}\ignorespaces
   }
 \def\endkeyword{\par\egroup\global\dp@t@keywords=\dp\t@keywords}
 \def\keywords#1{\begin{keyword}#1\end{keyword}}
 %
+\newenvironment{transkeyword}[1][\languagename]{%
+    \global\def\@transkeywordslang{#1}%
+    \global\def\transkeywordsname{\csname keywordsname@#1\endcsname}%
+    \newbox\t@transkeywords
+    \global\setbox\t@transkeywords=\vbox\bgroup
+      \hsize\abstract@width%
+      \justify@on\abstract@size\parindent 0\p@
+      \keywordsname@fmt{\csname keywordsname@#1\endcsname}%
+      \ignorespaces
+  }{%
+      \par
+    \egroup
+    \newdimen\dp@t@transkeywords
+    \global\dp@t@transkeywords=\dp\t@transkeywords
+  }
 % 
 %
 % Running title
@@ -1139,6 +1335,10 @@
 \long\def\convertas#1#2{#2}
 \def\sday#1{#1}\def\smonth#1{#1}\def\syear#1{#1}
 \def\aid#1{\gdef\@aid{#1}}
+\def\doi#1{\gdef\@DOI{#1}}
+\def\bookdoi#1{\gdef\@book@DOI{#1}}
+\def\pubmonth#1{\gdef\@pubmonth{#1}}
+\def\pubday#1{\gdef\@pubday{#1}}
 %
 \def\SSDI#1{\gdef\@ssdi{#1}} \def\@ssdi{000000-00}
 \def\issn#1{\gdef\@issn{#1}}
@@ -1146,9 +1346,311 @@
 %
 \def\date#1{\gdef\@date{#1}}    \def\@date{\today}
 %
-
 \def\empty@data{\@nil}
 %
+\def\openaccess{\global\let\@openaccess\relax}
+\def\openaccessbook{\global\let\@openaccessbook\relax}
+\let\freelicensetime\@gobble % needed for packing tool
+
+%%**************** Book frontmatter
+\def\sv@parindent    {12\p@}
+\def\sv@topskip      {10\p@}
+
+%\def\title#1{\gdef\@title{#1}}
+\def\seriestitle#1{\gdef\@seriestitle{#1}}
+\def\seriessubtitle#1{\gdef\@seriessubtitle{#1}}
+\def\seriesabbreviation#1{\gdef\@seriesabbreviation{#1}}
+\def\seriesvolume#1{\gdef\@seriesvolume{#1}}
+%\def\subtitle#1{\gdef\@subtitle{#1}}
+\def\serieseditor#1{\gdef\@serieseditor{#1}}
+\def\collaborator#1{\gdef\@collaborator{#1}}
+\def\edition#1{%
+  \ifnum #1<2\relax
+  \else
+    \gdef\@edition{#1}%
+  \fi
+  }
+\def\editor#1{\gdef\@editor{#1}}
+\def\authorinfo#1{\gdef\@authorinfo{#1}}
+\def\isbn#1{\gdef\@isbn{#1}}
+\def\eisbn#1{\gdef\@eisbn{#1}}
+%\def\issn#1{\gdef\@issn{#1}}
+\def\eissn#1{\gdef\@eissn{#1}}
+
+\ifdefined\vtex@in@house
+  \AtBeginDocument{%
+%% Environment content to token list
+    \let\saved@refstepcounter\refstepcounter
+    \RequirePackage{aidstuff}%
+    \let\refstepcounter\saved@refstepcounter
+    %
+    \newtoks\document@bookmeta
+    \get@env@toks{bookmeta}{\document@bookmeta}%
+    \newtoks\document@authorgroup
+    \get@env@toks{authorgroup}{\document@authorgroup}%
+    \newtoks\document@editorgroup
+    \get@env@toks{editorgroup}{\document@editorgroup}%
+    \newtoks\document@volumelist
+    \get@env@toks{volumelist}{\document@volumelist}%
+    \newtoks\document@distributors
+    \get@env@toks{distributors}{\document@distributors}%
+    }%
+\fi
+
+\def\makebookprelims{%
+  \bgroup
+    \long\def\start@tex@env##1[##2]##3\end@tex@env{%
+      ##3%
+      }%
+    \the\document@bookmeta
+    \makebooktitle
+  \egroup
+  \normaljustify
+  \topskip=\sv@topskip
+  }
+
+% Graphics (from iosart2x.cls)
+\ifdefined\vtex@in@house
+  \RequirePackage{vtexgrx2}%
+  %\RequirePackage{htpicture}
+  %\RequirePackage{stfloats}
+
+  \newpi{iospress}{{19.94mm}{16.51mm}{pcx}} %DPI=600
+\fi
+
+\def\publisherlogo{%
+  \vfill
+  %\figlink[scale=58]{iospress}%
+  \includegraphics[scale=0.58]{iospress}%
+  \par
+  \vspace{9pt}%
+  }
+
+\def\normaljustify{%
+  \let\\\@centercr
+  \rightskip\z@skip
+  \leftskip\z@skip
+  \parfillskip=0pt plus 1fil%
+  }
+
+\def\@ixfontsize{\fontsize{9}{11}\selectfont}
+
+\def\publisherlocationsline{%
+  \bgroup
+    \normalsize
+    \centering
+    \textsf{Amsterdam $\bullet$ Berlin $\bullet$ Oxford $\bullet$ Tokyo $\bullet$ Washington, DC}%
+    \par
+  \egroup
+  }
+
+\def\makebookprelims{%
+  \bgroup
+    \long\def\start@tex@env##1[##2]##3\end@tex@env{%
+      ##3%
+      }%
+    \the\document@bookmeta
+    \makebooktitle
+  \egroup
+  \normaljustify
+  \topskip=\sv@topskip
+  }
+
+\newdimen\b@isbn@skip
+\b@isbn@skip=9\p@
+\def\print@isbn{%
+  \bgroup
+    \@ixfontsize
+    \vskip\b@isbn@skip
+    ISBN\ \@isbn\\
+  \egroup
+  }
+
+\newdimen\b@distributors@skip
+\b@distributors@skip=21\p@
+\def\print@distributors{%
+  \bgroup
+    \long\def\start@tex@env##1[##2]##3\end@tex@env{%
+      \vskip\b@distributors@skip
+      \@ixfontsize
+      ##3%
+      \par
+      \vfill
+      }%
+    \the\document@distributors
+  \egroup
+  }
+
+\def\distributorinfo#1{%
+  \def\@distributorinfo{#1}%
+  \begin{minipage}[t]{4.5cm}%
+    \def\region##1{\gdef\distributor@region{\textit{##1}}}%
+    \def\institution##1{\gdef\distributor@institution{##1}}%
+    \def\address##1{\gdef\distributor@address{##1}}%
+    \def\fax##1{\gdef\distributor@fax{##1}}%
+    \def\email##1{\gdef\distributor@email{##1}}%
+    \setbox0=\hbox{\@distributorinfo}%
+    % No output temporarily, since simple table structure should be applied in XML
+    % (in this case no purpose to use specific tags)
+    %\distributor@region\\
+    %\distributor@institution\\
+    %\distributor@address\\
+    %fax:\ \distributor@fax\\
+    %e-mail:\ \distributor@email
+    \@distributorinfo
+  \end{minipage}%    
+  }
+
+\def\@legalnoticetext{%
+  The publisher is not responsible for the use which might be made of the
+  following information.%
+  }  
+\def\print@legalnotice{%
+  \bgroup
+    \@ixfontsize
+    LEGAL NOTICE\\
+    \@legalnoticetext
+    \par
+  \egroup
+  }
+
+\def\@printlocationtext{PRINTED IN THE NETHERLANDS}%
+\def\print@location{%
+  \vskip12pt%
+  \bgroup
+    \@ixfontsize
+    \@printlocationtext
+    \par
+  \egroup
+  \normalsize
+  }
+  
+\def\book@title{\@title}
+\def\makebooktitle{%
+  \pagestyle{empty}%
+  \bgroup
+    % page I
+    %\thispagestyle{empty}%
+    \printpageI
+    % page II
+    \clearpage
+    %\thispagestyle{empty}%
+    \printseriesinfo
+    \printvolumelist
+    % page III
+    \clearpage
+    %\thispagestyle{empty}%
+    \print@book@title{\@title}%
+    \ifx\@transtitle\@undefined
+    \else
+      \print@book@title{\@transtitle}%
+    \fi
+    \print@book@author@address@block
+    \publisherlogo
+    \publisherlocationsline
+    % page IV
+    \clearpage
+    %\thispagestyle{empty}%
+    \print@copyrightinfo
+    \ifdefined\@isbn
+      \print@isbn
+    \fi
+    \ifdefined\@lccn
+      \print@lccn
+    \fi
+    \publisherinfo@fmt{\@publisherinfo}%
+    \print@distributors
+    \print@legalnotice
+    \print@location
+    \global\parindent=\sv@parindent
+  \egroup
+  }
+
+\def\print@book@author@address@block{%
+  \bgroup
+    \long\def\start@tex@env##1[##2]##3\end@tex@env{%
+      \init@book@author@address@block@fmt
+      ##3%
+      }%
+    \the\document@authorgroup
+  \egroup
+  }
+
+\newdimen\b@publisher@skip
+\b@publisher@skip=18\p@
+\def\publisherinfo#1{%
+  \def\@publisherinfo{#1}%
+  \bgroup
+    \def\publishername##1{\gdef\publisher@name{##1}}%
+    \def\publisherlocation##1{\gdef\publisher@location{##1}}%
+    \def\fax##1{\gdef\publisher@fax{##1}}%
+    \def\email##1{\gdef\publisher@email{##1}}%
+    \setbox0=\hbox{\@publisherinfo}%
+  \egroup
+  }
+\def\publisherinfo@fmt#1{%
+  \@ixfontsize
+  \vskip\b@publisher@skip
+  \textit{Publisher}\\
+  \@ifundefined{publisher@name}
+    {}
+    {\publisher@name\\}%
+  \@ifundefined{publisher@location}
+    {}
+    {\publisher@location\\}%
+  \@ifundefined{publisher@fax}
+    {}
+    {fax:\ \publisher@fax\\}%
+  \@ifundefined{publisher@email}
+    {}
+    {e-mail:\ \publisher@email}%
+  \par
+  }
+
+%%************************ Copyright, license
+\def\copyrightholder#1{\gdef\@copyrightholder{#1}}
+\AtBeginDocument{%
+  \ifx\@copyrightholder\undefined
+    \ifx\@openaccess\relax
+      \gdef\@copyrightholder{???}%
+    \else
+      \gdef\@copyrightholder{The author}%
+    \fi
+  \fi
+  }
+\def\copyrightyear#1{%
+  \gdef\@copyrightyear{#1}%
+  }
+\global\let\@copyrightyear\@pubyear
+\def\@copyrighttext{\copyright\ \@copyrightyear\space --\space\@copyrightholder. All rights reserved}
+\def\book@copyrightline{%
+  \copyright\ \@copyrightyear\ \@copyrightholder.%
+  }
+\def\book@copyrighttext{%
+  All rights reserved. No part of this book may be reproduced,
+  stored in a retrieval system, or transmitted, in any form
+  or by any means,\\ without prior written
+  permission from the publisher.%
+  }
+\def\license@text{%
+  This book is published online with Open Access and distributed under the terms of the
+  \href{https://creativecommons.org/licenses/by-nc/4.0/}{Creative Commons Attribution Non-Commercial License 4.0 (CC BY-NC 4.0)}%
+  }
+
+\def\print@copyrightinfo{%
+  \normaljustify
+  \topskip=0\p@
+  \vspace*{-0.8mm}%
+  %\vspace*{0.1cm}%
+  \bgroup
+    \parindent=0\p@
+    \@ixfontsize
+    \book@copyrightline
+    \vskip9\p@
+    \book@copyrighttext
+    \par
+  \egroup
+  }
 
 %***************** BACKMATTER
 \newcommand\backmatter{\goodbreak}
@@ -1159,9 +1661,18 @@
 \newcommand\tablename{Table}
 \newcommand\algorithmname{Algorithm}
 \newcommand\appendixname{Appendix}
-\newcommand\abstractname{Abstract. }
-\newcommand\keywordsname{Keywords. }
-\def\acknowledgementsname{Acknowledgements}
+\newcommand\abstractname@sep{.\ }
+\newcommand\abstractname@english{Abstract}
+\newcommand\abstractname@ngerman{Zusammenfassung}
+\newcommand\abstractname@french{Résumé}
+\newcommand\abstractname@spanish{Resumen}
+\newcommand\keywordsname@english{Keywords}
+\newcommand\keywordsname@ngerman{Schlagwörter}
+\newcommand\keywordsname@french{Mots-clés}
+\newcommand\keywordsname@spanish{Palabras clave}
+\newcommand\keywordsname@sep{.\ }
+\newcommand\sep{\unskip, }
+\newcommand\acknowledgementsname{Acknowledgements}
 %
 \def\copyright@sign{\copyright}
 %
@@ -1194,6 +1705,79 @@
 \else\setlength\tablewidth{\textwidth}\fi
 %\pagestyle{headings}
 \pagestyle{empty}
+
+% p. I
+\def\printpageI{%
+  \topskip=0pt\relax
+  \vspace*{3cm}%
+  \bgroup
+    \centering
+    \fontsize{14.6}{14.6}\selectfont
+    \expandafter\uppercase\expandafter{\@title}%
+    \par
+  \egroup
+  }
+
+% p. II
+\def\seriesinfo@fmt{%
+  \vspace*{-11pt}%
+  \bgroup
+    \centering
+    \Huge\@seriestitle
+    \par
+  \egroup
+  \vspace*{1.0cm}%
+  \begin{center}%
+    {\large Volume \@seriesvolume}%
+  \end{center}%
+  \vspace*{0.5cm}%
+  }
+
+\def\b@volumelist@text{\textit{Recently published in this series:}}
+\def\printvolumelist{%
+  \bgroup
+    \long\def\start@tex@env##1[##2]##3\end@tex@env{%
+      \centering
+      \small
+      \b@volumelist@text
+      \par
+      \vspace*{0.5cm}%
+      \par
+      \before@volumelist@hook
+      \begin{tabular}{@{\hspace{1pt}}l@{\hspace*{6pt}}p{11.2cm}@{}}%
+        ##3%
+      \end{tabular}%
+      \after@volumelist@hook
+      \par
+      \vspace*{1.3cm}%
+      \par
+      \print@issn
+      \par
+      }%
+    \the\document@volumelist
+  \egroup
+  }
+
+\let\printseriesinfo\seriesinfo@fmt
+
+% p. III
+\def\before@title@fmt{%
+  \centering
+  \topskip=0pt%
+  \vspace*{0.1cm}%
+  }
+\def\after@title@fmt{%
+  \vspace{4.6cm}%
+  \par
+  {\fontsize{12.5}{14}\selectfont By}%
+  %\vspace{0.4cm}%
+  }
+  
+\def\print@book@title#1{%
+  \before@title@fmt
+  {\fontsize{26}{30}\selectfont #1}%
+  \after@title@fmt
+  }
 
 \endinput
 %%
