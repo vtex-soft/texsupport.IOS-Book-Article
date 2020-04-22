@@ -19,8 +19,6 @@ camera-ready paper in LaTeX. This document contains useful information regarding
 - Read the instructions (`ios-book-article_LaTeX_Instructions.pdf`) for the preparation of your LaTeX document;
 - Copy the template file `IOS-Book-Article.tmpl` to the proper `.tex` file of your manuscript and prepare it.
 
+## Bug reports
 
-
-
-
-
+Please submit bug report, issues or feature requests to `latex-support@vtex.lt`.
