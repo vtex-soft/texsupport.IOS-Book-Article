@@ -4,7 +4,7 @@
 %%
 %% Macros written by Vytas Statulevicius, VTeX, Lithuania
 %% for IOS Press, The Netherlands
-%% Please submit bugs or your comments to vytas@vtex.lt
+%% Please submit bugs or your comments to latex-support@vtex.lt
 %%
 %% You are free to use this class file as you see fit, provided 
 %% that you do not make changes to the file. 
