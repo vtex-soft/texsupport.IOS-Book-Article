@@ -1,3 +1,5 @@
 title: IOS Press book author support
 description: TeX related material for the manuscript preparation
 show_downloads: true
+
+theme: jekyll-theme-slate
