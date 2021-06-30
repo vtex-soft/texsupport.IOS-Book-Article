@@ -6,12 +6,17 @@ The Author support service provides LaTeX style files and `.tex` file templates 
 
 The following files are given in the repository (or directly in `.zip` archive):
 
-- `IOS-Book-Article.cls` - LaTeX style file designed for *IOS Press* book articles. Please do not change them. These files are already loaded in the respective template files; 
-- `IOS-Book-Article.tmpl` - the main template file should be used for article preparation;
-- `ios-book-article_LaTeX_Instructions.pdf` - instructions for the preparation of a
-camera-ready paper in LaTeX. This document contains useful information regarding the structure of your document, proper tagging style, layout features, etc;
-- `ios-book-article.pdf` - example of the prepared article;
-- `ios-book-article.tex` - source file of the example.
+- `IOS-Book-Article.cls`&mdash;LaTeX style file designed for *IOS Press* book articles. Please do not change them.
+These files are already loaded in the respective template files;
+- `IOS-Book-Article.tmpl`&mdash;the main template file should be used for article preparation;
+- `ios-book-article_LaTeX_Instructions.pdf`&mdash;instructions for the preparation of a
+camera-ready paper in LaTeX. This document contains useful information regarding the structure of your document,
+proper tagging style, layout features, etc.;
+- `ios-book-article.pdf`&mdash;example of the prepared article;
+- `ios-book-article.tex`&mdash;source file of the example;
+- `vancouver.bst`&mdash;BibTeX related file. If your bibliography is structured in the BibTeX format,
+loading your *.bib file and the provided  BibTeX style vancouver.bst allows you to get the final format of the bibliography.
+Please note that the bibtex program should be used to generate the *.bbl file.
 
 ## Setup
 
