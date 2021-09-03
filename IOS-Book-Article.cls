@@ -39,7 +39,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2019/12/04 v1.11, IOS Press, VTEX]
+              [2021/09/03 v1.12, IOS Press, VTEX]
 
 \IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
 
@@ -60,6 +60,7 @@
     \ProvidesFile{etoolbox.sty}%
   \fi
 \fi
+\pagenumbering{arabic}%
 \RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
 
 \newif\if@restonecol \@restonecolfalse
@@ -198,6 +199,9 @@
 
 \def\paper@width {210mm}
 \def\paper@height{297mm}
+
+\paperwidth=\paper@width\relax
+\paperheight=\paper@height\relax
 
 \hoffset=-1in
 \voffset=-1in
@@ -1544,19 +1548,19 @@
   
 \def\book@title{\@title}
 \def\makebooktitle{%
-  \pagestyle{empty}%
+  %\pagestyle{empty}%
   \bgroup
     % page I
-    %\thispagestyle{empty}%
+    \thispagestyle{empty}%
     \printpageI
     % page II
     \clearpage
-    %\thispagestyle{empty}%
+    \thispagestyle{empty}%
     \printseriesinfo
     \printvolumelist
     % page III
     \clearpage
-    %\thispagestyle{empty}%
+    \thispagestyle{empty}%
     \print@book@title{\@title}%
     \ifx\@transtitle\@undefined
     \else
@@ -1567,7 +1571,7 @@
     \publisherlocationsline
     % page IV
     \clearpage
-    %\thispagestyle{empty}%
+    \thispagestyle{empty}%
     \print@copyrightinfo
     \ifdefined\@isbn
       \print@isbn
@@ -1714,14 +1718,15 @@
   \space\number\day, \number\year}
 %
 \@twosidetrue
-\pagenumbering{arabic}
 \frenchspacing
 \init@settings
 
 \if@twocolumn\setlength\tablewidth{\columnwidth}
 \else\setlength\tablewidth{\textwidth}\fi
-%\pagestyle{headings}
-\pagestyle{empty}
+
+%\pagestyle{empty}
+\pagestyle{headings}
+\thispagestyle{empty}
 
 % p. I
 \def\printpageI{%
