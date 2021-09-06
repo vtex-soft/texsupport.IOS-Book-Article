@@ -39,7 +39,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2021/09/03 v1.12, IOS Press, VTEX]
+              [2021/09/06 v1.13, IOS Press, VTEX]
 
 \IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
 
@@ -1724,9 +1724,9 @@
 \if@twocolumn\setlength\tablewidth{\columnwidth}
 \else\setlength\tablewidth{\textwidth}\fi
 
-%\pagestyle{empty}
-\pagestyle{headings}
-\thispagestyle{empty}
+\pagestyle{empty}
+%\pagestyle{headings}
+%\thispagestyle{empty}
 
 % p. I
 \def\printpageI{%
