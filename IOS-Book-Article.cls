@@ -39,9 +39,14 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2021/09/06 v1.13, IOS Press, VTEX]
+              [2022/05/13 v1.17, IOS Press, VTEX]
 
 \IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
+
+\usepackage{ifpdf}
+\ifpdf\else
+  \usepackage{luafonts}
+\fi
 
 %% in case of tex4ht wf all processing is redirected to the class iosbook2x.cls, this class (IOS-Book-Article.cls) acts just as an ordinary project driver class 
 \ifdefined\HCode
@@ -58,10 +63,18 @@
     % {etoolbox} is not compatible with {bm} package (\@@end usage)
     \RequirePackage{etoolbox-2.2a}%
     \ProvidesFile{etoolbox.sty}%
+  \else
+    \usepackage{etoolbox}%
   \fi
 \fi
-\pagenumbering{arabic}%
 \RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
+
+\newif\ifcheck@lpage
+\ifdefined\vtex@in@house
+  \usepackage{vtex-ltxext}%
+  \usepackage{vtex-checklpage}%
+\fi
+\usepackage{environ}
 
 \newif\if@restonecol \@restonecolfalse
 \newif\if@openright
@@ -96,17 +109,95 @@
 \DeclareOption{french}{\AtBeginDocument{\def\languagename{french}}}
 
 % Information about the publication
-\def\booktitle#1{\gdef\book@title{#1}}
+\def\booktitle#1{%
+  \AtBeginDocument{%
+    \gdef\book@title{#1}%
+    }%
+  }
 \def\bookeditors#1{\gdef\book@editors{#1}}
 \def\publisher#1{\gdef\@publisher{#1}}
 
-\booktitle{Book Title}
+\def\copyrightholder#1{\xdef\@copyrightholder{#1}}
+
+%\booktitle{Book Title}
+\gdef\book@title{Book Title}
 \bookeditors{Book Editors}
 \publisher{IOS Press}
 
-\ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn}
+\gdef\@jid{default}
+\DeclareOption{george}{\gdef\@jid{george}}
+
+\newif\ifreprint@init \reprint@inittrue
+\DeclareOption{reprint}{\reprint@inittrue}
+\DeclareOption{noreprint}{\reprint@initfalse}
+
+\ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn,reprint}
 \ProcessOptions*
 %
+
+% >>>>>>>>>>>>>>>>>>>>>>>>>> project specific data
+
+
+% -------------------------------- default
+% Text dimensions
+\def\textwidth@default{124mm}
+\def\textheight@default{200mm}
+\def\abstract@width@default{22pc}
+\def\oddsidemargin@default{\dimexpr(\paper@width-\textwidth@default)/2\relax}
+\let\evensidemargin@default\oddsidemargin@default
+\def\topmargin@default{\dimexpr(\paper@height-\textheight@default-\headsep-\headheight)/2\relax}
+
+% Information about the publication
+%\def\book@title@default{Book Title}
+\def\book@editors@default{Book Editors}
+\def\@copyrightholder@default{The author}
+
+\def\init@default@settings{%
+  \reprint@initfalse
+  }
+\ifdefined\vtex@in@house
+  \appto\init@default@settings{%
+    \check@lpagefalse
+    }
+\fi
+
+% -------------------------------- george
+% Text dimensions
+\def\textwidth@george{160mm}
+\def\textheight@george{210mm}
+\def\abstract@width@george{130mm}
+\def\oddsidemargin@george{23mm}
+\def\evensidemargin@george{27mm}
+\def\topmargin@george{37mm}% should be 39mm actually, real is 2mm bigger somehow
+
+% Information about the publication
+\def\book@title@george{Stem Cells and Regenerative Medicine}%
+\def\book@editors@george{D. George et al. (Eds.)}%
+\def\@copyrightholder@george{The authors and IOS Press}
+
+\def\init@george@settings{%
+  \RequirePackage{times}%
+  \RequirePackage{mathtime}%
+  %
+  \AtBeginDocument{%
+    \pagestyle{copyright}%
+    }%
+  }
+\ifdefined\vtex@in@house
+  \appto\init@george@settings{%
+    \check@lpagetrue
+    }%
+\fi
+
+% ------------------------------
+\ifcsdef{book@title@\@jid}
+  {\booktitle{\csname book@title@\@jid\endcsname}}{}
+\bookeditors{\csname book@editors@\@jid\endcsname}
+\copyrightholder{\csname @copyrightholder@\@jid\endcsname}%
+
+\@nameuse{init@\@jid @settings}
+
+% <<<<<<<<<<<<<<<<<<<<<<<< project specific data
 
 %************************* FONTS
 %\def\@xivpt{14}
@@ -166,9 +257,9 @@
 % TEXT DIMENSIONS
 \setlength\parindent{18\p@}
 \@settopoint\parindent
-\setlength\textwidth{124mm}
+\setlength\textwidth{\csname textwidth@\@jid\endcsname}
 \@settopoint\textwidth
-\setlength\textheight{200mm}
+\setlength\textheight{\csname textheight@\@jid\endcsname}
 \@settopoint\textheight
 \setlength\columnsep{10mm}
 \@settopoint\columnsep
@@ -200,26 +291,17 @@
 \def\paper@width {210mm}
 \def\paper@height{297mm}
 
-\paperwidth=\paper@width\relax
-\paperheight=\paper@height\relax
-
 \hoffset=-1in
 \voffset=-1in
 
-\@tempdima=\paper@width
-\advance\@tempdima by-\textwidth
-\divide\@tempdima by2
-\setlength\evensidemargin  {\@tempdima}%
-\setlength\oddsidemargin   {\@tempdima}%
+\setlength\evensidemargin{\csname evensidemargin@\@jid\endcsname}
+\setlength\oddsidemargin{\csname oddsidemargin@\@jid\endcsname}
 
-\@tempdima=\paper@height
-\advance\@tempdima by-\textheight
-\advance\@tempdima by-\headsep
-\advance\@tempdima by-\headheight
-\divide\@tempdima by2
-\setlength\topmargin  {\@tempdima}%
+\setlength\topmargin{\csname topmargin@\@jid\endcsname}%
 
 %************************* LOADING PACKAGES:
+\let\begin@orig\begin
+\let\end@orig\end
 \ifdefined\vtex@in@house
   \RequirePackage{pagecrop}%
 
@@ -342,37 +424,86 @@
       \def\@oddhead{\footnotesize\hfill\textit{\rightmark}\hfill\llap{\thepage}}%
 }%
 % empty RH
-\def\ps@empty{\let\@mkboth\@gobbletwo
-     \def\@oddhead{\hfill}\def\@oddfoot{}
-\let\@evenhead\@oddhead\let\@evenfoot\@oddfoot}
-%
-% RH  with pagenumber at bottom
-\def\ps@plain{\let\@mkboth\@gobbletwo
-     \def\@oddhead{\hfill}\def\@oddfoot{}
-\let\@evenhead\@oddhead
-  \def\@oddfoot{\hfill\footnotesize\thepage\hfill}
+\def\ps@empty{%
+  \let\@mkboth\@gobbletwo
+  \def\@oddhead{\hfill}%
+  \let\@evenhead\@oddhead
+  \def\@oddfoot{}%
   \let\@evenfoot\@oddfoot
-}
+  }
+% RH  with pagenumber at bottom
+\def\ps@plain{%
+  \let\@mkboth\@gobbletwo
+  \def\@oddhead{\hfill}%
+  \let\@evenhead\@oddhead
+  \def\@oddfoot{\hfill\footnotesize\thepage\hfill}%
+  \let\@evenfoot\@oddfoot
+  }
 % First page RH
-\def\ps@copyright{\let\@mkboth\@gobbletwo
-  \def\@evenhead{\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
-  \def\@oddhead {\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
+\def\ps@copyright{%
+  \let\@mkboth\@gobbletwo
+  \ifreprint@init
+    \def\@oddhead{\rh@hook\hfill{\footnotesize\thepage}}%
+    \def\@evenhead{\rh@hook{\footnotesize\thepage}\hfill}%
+  \else
+    \def\@oddhead {\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
+    \def\@evenhead{\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
+  \fi
   \let\@oddfoot\relax%
   \let\@evenfoot\@oddfoot%
-}
+  }
 %
 % HEADLINE: Book Title  
 %           Book Editors
 %           IOS Press, 0000
 %
 \def\titleheadline{%
-   \book@title\\
-   \book@editors\\
-   \@publisher, \the\@pubyear}
-%
-\def\@copyright{\@issn/\the@copyear/\$\@price\ \copyright@sign\
-\the\@pubyear\@copyrightowner}%
-%
+  \book@title\\
+  \book@editors\\
+  \@publisher, \the\@pubyear
+  }
+
+\def\@copyright{%
+  \bgroup
+    \def\copyright@delim{}%
+    \@issn/\the@copyear/\$\@price\space\book@copyrightline
+  \egroup
+  }%
+
+\def\restore@rh{\gdef\rh@hook{}}
+\restore@rh
+
+\ifreprint@init
+  % reprint heading
+  \newbox\reprint@box
+  \AtBeginDocument{%
+    \global\setbox\reprint@box\vbox{%
+      \vskip-6pt\relax
+      \ifodd\c@page\else
+        \raggedleft
+      \fi
+      \parindent=0pt\relax
+      \footnotesize\itshape
+      \titleheadline\\
+      \bgroup
+        \advance\@copyear 2000\relax
+        \def\the@copyear{\the\@copyear}%
+        \def\copyright@delim{}%
+        \@copyrighttext.\par
+      \egroup
+      doi:\@DOI\par
+      }%
+    \ht\reprint@box\z@
+    \dp\reprint@box\z@
+    \wd\reprint@box\z@
+    %
+    \pagestyle{copyright}%
+    }%
+  \appto\rh@hook{%
+    \box\reprint@box
+    \restore@rh
+    }%
+\fi
 
 % ************************ FOOTNOTE
 %
@@ -782,9 +913,13 @@
 \endgroup}
 %
 \def\tailthanksref[#1]#2{\noexpand\pthanksref{#1}}
-\def\pthanksref#1{\global\advance\note@cnt\@ne\ifnum\note@cnt>\@ne
-\global\t@loc@notes\expandafter{\the\t@loc@notes\note@sep}\fi
-\global\t@loc@notes\expandafter{\the\t@loc@notes#1}}
+\def\pthanksref#1{%
+  \global\advance\note@cnt\@ne
+  \ifnum\note@cnt>\@ne
+    \global\t@loc@notes\expandafter{\the\t@loc@notes\note@sep}%
+  \fi
+  \global\t@loc@notes\expandafter{\the\t@loc@notes#1}%
+  }
 %
 \def\beg@elem{\global\t@loc@notes={}\global\note@cnt\z@}
 \def\@xnamedef#1{\expandafter\xdef\csname #1\endcsname}
@@ -826,15 +961,22 @@
 %
 \def\add@thanks#1{%
   \global\advance\note@cnt\@ne
-    \ifnum\note@cnt>\@ne \add@xtok\t@loc@notes{\note@sep}\fi
-    \ifx.#1.\add@xtok\t@loc@notes{\thefootnote}\else
-        \add@xtok\t@loc@notes{#1}\fi%
-}
+  \ifnum\note@cnt>\@ne
+    \add@xtok\t@loc@notes{\note@sep}%
+  \fi
+  \ifx.#1.%
+    \add@xtok\t@loc@notes{\thefootnote}%
+  \else
+    \add@xtok\t@loc@notes{#1}%
+  \fi
+  }
 \def\add@addressref#1{%
   \global\advance\note@cnt\@ne
-    \ifnum\note@cnt>\@ne \add@xtok\t@loc@notes{\note@sep}\fi
-    \add@tok\t@loc@notes{\ref{#1}}%
-}
+  \ifnum\note@cnt>\@ne
+    \add@xtok\t@loc@notes{\note@sep}%
+  \fi
+  \add@tok\t@loc@notes{\ref{#1}}%
+  }
 \def\note@sep{,}
 %
 \def\thanks@optarg[#1]#2{%
@@ -875,6 +1017,8 @@
 \newskip\keywords@noabs@skip \keywords@noabs@skip=10\p@
 %
 \def\endfrontmatter{%
+  \collab@groups@fmt
+  %
   \global\n@author=\c@author \@writecount
   \global\@topnum\z@
   \ifx\@firstpage\@lastpage
@@ -1084,25 +1228,62 @@
 %
 \def\author{\@ifnextchar[{\author@optarg}{\author@optarg[]}}
 %
-\def\author@optarg[#1]#2{\stepcounter{author}%
-  \beg@elem\def\degs##1{##1}\def\fnms##1{##1}\def\inits##1{##1}%
-        \def\snm##1{\MakeUppercase{##1}}\def\roles##1{##1}%
-  \if@firstauthor%
-  \first@author \global\@firstauthorfalse \fi%
+\edef\@author@list{}% csv list of author indices: 1,2,3
+\edef\orcid@present{}%
+\def\author@optarg[#1]#2{%
+  \stepcounter{author}%
+  \beg@elem
+  \def\degs##1{%
+    ##1%
+    \global\csdef{degs@\the\c@author}{##1}%
+    }%
+  \def\fnms##1{%
+    ##1%
+    \global\csdef{fnms@\the\c@author}{##1}%
+    }%
+  \def\inits##1{%
+    ##1%
+    \global\csdef{inits@\the\c@author}{##1}%
+    }%
+  \def\snm##1{%
+    \MakeUppercase{##1}%
+    \global\csdef{snm@\the\c@author}{##1}%
+    }%
+  % simplified orcid command for authors
+  \def\orcid##1{%
+    \global\csdef{orcid@\the\c@author}{##1}%
+    \global\csdef{orcid@present}{1}%
+    }%
+  \def\roles##1{##1}%
+  \if@firstauthor
+    \first@author
+    \global\@firstauthorfalse
+  \else
+    \appto\@author@list{,}%
+  \fi
+  \edef\@author@list{\@author@list\the\c@author}%
   \@for\@tempa:=#1\do{\expandafter\add@addressref\expandafter{\@tempa}}%
   \proc@elem{author}{#2}%
-  \author@fmt{\the\c@author}{\the\t@loc@notes}{\@author}}%
+  \author@fmt{\the\c@author}{\the\t@loc@notes}{\@author}%
+  }%
 %
 %\newbox\author@box
 
 %
-\def\author@fmt#1#2#3{\@newelemtrue
+\def\author@fmt#1#2#3{%
+  \@newelemtrue
   \ifnum\prev@elem=\e@author \global\@newelemfalse \fi
   \if@newelem \author@fmt@init \fi
-  \edef\@tempb{#2}\ifx\@tempb\@empty
-    \hbox{#3}\else
-    \hbox{#3\,$^{\mathrm{#2}}$}%
-  \fi}
+  \edef\@tempb{#2}%
+  \ifx\@tempb\@empty
+    \hbox{#3}%
+  \else
+    \bgroup
+      \let\ref\relax
+      \hbox{#3\,{$^{\mathrm{#2}}$}}%
+    \egroup
+  \fi
+  }
 %
 \def\first@author{\author@note@fmt%
   \add@tok\t@glob@notes%
@@ -1112,7 +1293,8 @@
   \par
   \vskip \b@author@skip
   \authors@size\centering
-  \leavevmode}
+  \leavevmode
+  }
 %
 \def\and{\unskip~and~}
 %
@@ -1123,7 +1305,77 @@
         \expandafter\ifcase\value{#1} \or *\or **\or *** \or **** \or *****\fi
 }
 
-\def\collab#1{\author{\snm{#1}}}
+\edef\collab@pref{}
+\edef\collab@post{ }
+\edef\collab@fnix{*}
+\newcounter{collabgroup}
+\edef\collab@groups{}% csv list of collab group indices: 1,2,3
+%\newenvironment{collabgroup}{%
+%    \def\collab@pref{${}^\collab@fnix$\,}%
+%    \def\collab@post{:}%
+%  }{}
+\NewEnviron{collabgroup}{%
+  \global\refstepcounter{collabgroup}%
+  \if.\collab@groups.\else
+    \xdef\collab@groups{\collab@groups,}%
+  \fi
+  \xdef\collab@groups{\collab@groups\the\c@collabgroup}%
+  %
+  \bgroup
+    \def\collab@optarg[##1]##2{%
+      \xdef\@collab@notes{##1}%
+      \gdef\collab@text{##2}%
+      }%
+    \def\author@optarg[##1]##2{}%
+    \def\address@star##1{}%
+    \def\address@optarg[##1]##2{}%
+    \def\address@noptarg##1{}%
+    \setbox\@tempboxa\vbox{\BODY}%
+    %
+    \expandafter\newtoks\csname collab@group@\the\c@collabgroup\endcsname
+    \expandafter\global\expandafter\csname collab@group@\expandafter\the\expandafter\c@collabgroup\expandafter\endcsname\expandafter=\expandafter{\BODY}%
+  \egroup
+  \bgroup
+    \def\collab@post{\,${}^{\collab@fnix}$ }%
+    \collab@optarg[\@collab@notes]{\collab@text}%
+  \egroup
+  \expandafter\xdef\csname collab@fnix@\the\c@collabgroup\endcsname{\collab@fnix}%
+  \xdef\collab@fnix{*\collab@fnix}%
+  }%
+\def\collab@groups@fmt{%
+  \setcounter{collabgroup}{0}
+  \def\do##1{%
+    \refstepcounter{collabgroup}%
+    \def\collab@pref{\,${}^{\csname collab@fnix@\the\c@collabgroup\endcsname}$}%
+    \def\collab@post{:}%
+    \expandafter\the\expandafter\csname collab@group@##1\expandafter\endcsname
+    }%
+  \expandafter\docsvlist\expandafter{\collab@groups}%
+  }
+\def\collabtext#1\thanks#2.{%
+  %\def\@collab@text{\uppercase{#1}}%
+  \def\@collab@text{#1}%
+  \def\@thanks@text{#2}%
+  \ifx\@thanks@text\@empty
+    \author{\collab@pref\@collab@text\collab@notes}%
+  \else
+    \author{\collab@pref\@collab@text\collab@notes\thanks{#2}}%
+  \fi
+  \collab@post
+  }%
+\def\collab{\@ifnextchar[{\collab@optarg}{\collab@optarg[]}}
+\def\collab@optarg[#1]#2{%
+  \bgroup
+    \xdef\@collab@notes{#1}%
+    \ifx\@collab@notes\@empty
+      \gdef\collab@notes{}%
+    \else
+      \gdef\collab@notes{\,${}^{\mathrm{\@collab@notes}}$}%
+    \fi
+  \egroup
+  \let\thanks\relax
+  \collabtext#2\thanks.%
+  }%
 
 %
 % EMAIL
@@ -1164,30 +1416,40 @@
 %
 \def\email#1{{e-mail:\ #1}}
 %
-\def\address{\@ifstar{\address@star}%
-  {\@ifnextchar[{\address@optarg}{\address@noptarg}}}
+\def\address{%
+  \@ifstar
+    {\address@star}%
+    {\@ifnextchar[{\address@optarg}{\address@noptarg}}%
+  }
 %
-\def\address@optarg[#1]#2{\refstepcounter{address}%
+\def\address@optarg[#1]#2{%
+  \refstepcounter{address}%
   \beg@elem
   \proc@elem{address}{#2}%
-  \address@fmt{\the\c@address}{\the\t@loc@notes}{\@address}\label{#1}%
-  \ignorespaces}
+  \address@fmt{\the\c@address}{\the\t@loc@notes}{\@address}%
+  \label{#1}%
+  \ignorespaces
+  }
 %
-\def\address@noptarg#1{\refstepcounter{address}%
+\def\address@noptarg#1{%
+  \refstepcounter{address}%
   \beg@elem
   \proc@elem{address}{#1}%
   \address@fmt{\z@}{\the\t@loc@notes}{\@address}%
-  \ignorespaces}
+  \ignorespaces
+  }
 %
 \def\address@star#1{%
   \beg@elem
   \proc@elem{address}{#1}%
   \address@fmt{\m@ne}{\the\t@loc@notes}{\@address}%
-  \ignorespaces}
+  \ignorespaces
+  }
 %
 \def\theaddress{\alph{address}}
 %
-\def\address@fmt#1#2#3{\@newelemtrue
+\def\address@fmt#1#2#3{%
+  \@newelemtrue
   \ifnum\prev@elem=\e@address \@newelemfalse \fi
   \if@newelem \address@fmt@init \fi
   \bgroup\parskip\z@\noindent\centering \address@size
@@ -1200,12 +1462,14 @@
       $^{\mathrm{\theaddress}\,}$#3\,$^{\mathrm{#2}}$%
     \fi
   \fi
-  \par\egroup}
+  \par\egroup
+  }
 %
 \def\address@fmt@init{%
-        \def\@currentlabel{\theaddress}
+  \def\@currentlabel{\theaddress}
   \par
-  \vskip 2\p@ plus 1\p@ minus 1\p@}
+  \vskip 2\p@ plus 1\p@ minus 1\p@
+  }
 %
 \def\institution#1{#1}
 \def\city#1{#1}
@@ -1239,8 +1503,35 @@
 \newcommand\abstractname{\csname abstractname@\languagename\endcsname}
 \newcommand\abstractname@fmt[1]{\textbf{#1\abstractname@sep}}
 %
+\newif\if@firstorcid \@firstorcidtrue
 \def\abstract{\@ifnextchar[{\@abstract}{\@abstract[]}}
 \def\@abstract[#1]{%
+  % orcids
+  \def\do##1{%
+    \ifcsdef{orcid@##1}{%
+      \if@firstorcid
+        \global\@firstorcidfalse
+      \else
+        ,\space
+      \fi
+      \csuse{degs@##1}%
+      \ifcsdef{degs@##1}{\space}{}%
+      \csuse{inits@##1}%
+      \ifcsdef{inits@##1}{\space}{}%
+      \csuse{fnms@##1}%
+      \ifcsdef{fnms@##1}{\space}{}%
+      \csuse{snm@##1}%
+      \ifcsdef{snm@##1}{\space}{}%
+      \ead@hrefprefix@orcid
+      \csuse{orcid@##1}%
+      }{}%
+    }%
+  \if.\orcid@present.\else
+    ORCiD ID:
+  \fi
+  \expandafter\docsvlist\expandafter{\@author@list}%
+  \par
+  %
   \def\parttitle##1{%
     \endgraf
     \noindent
@@ -1284,11 +1575,13 @@
 %
 \global\@haskeywordsfalse
 \newdimen\dp@t@keywords
-\def\keyword{\global\@haskeywordstrue%
-  \global\setbox\t@keywords=\vbox\bgroup%
-  \hsize\abstract@width%
+\def\keyword{%
+  \global\@haskeywordstrue
+  \global\setbox\t@keywords=\vbox\bgroup
+  \hsize\abstract@width
   \justify@on\abstract@size\parindent 0\p@
-  \keywordsname@fmt{\keywordsname}\ignorespaces
+  \keywordsname@fmt{\keywordsname}%
+  \ignorespaces
   }
 \def\endkeyword{\par\egroup\global\dp@t@keywords=\dp\t@keywords}
 \def\keywords#1{\begin{keyword}#1\end{keyword}}
@@ -1327,10 +1620,12 @@
 \@copyear\@pubyear 
 \advance\@copyear-2000
 
-\def\pubyear#1{\global\@pubyear#1
+\def\pubyear#1{%
+  \global\@pubyear#1
   \global\@copyear\@pubyear 
   \global\advance\@copyear-2000%
-  \ignorespaces}
+  \ignorespaces
+  }
 %
 \def\the@copyear{\ifnum\@copyear<10 0\fi\the\@copyear}
 
@@ -1349,9 +1644,14 @@
 
 % Write the last page:
 \def\write@last@page{%
-\write\@mainaux{\string\global\string\@namedef{@lastpage}{\the\c@page}}}
+  \write\@mainaux{\string\global\string\@namedef{@lastpage}{\the\c@page}}%
+  }
+\AtEndDocument{%
+  \ifcheck@lpage\else
+    \write@last@page
+  \fi
+  }
 
-\AtEndDocument{\write@last@page}
 % SGML
 \long\def\convertas#1#2{#2}
 \def\sday#1{#1}\def\smonth#1{#1}\def\syear#1{#1}
@@ -1402,6 +1702,8 @@
   \AtBeginDocument{%
 %% Environment content to token list
     \let\saved@refstepcounter\refstepcounter
+    \let\begin\begin@orig
+    \let\end\end@orig
     \RequirePackage{aidstuff}%
     \let\refstepcounter\saved@refstepcounter
     %
@@ -1548,19 +1850,19 @@
   
 \def\book@title{\@title}
 \def\makebooktitle{%
-  %\pagestyle{empty}%
+  \pagestyle{empty}%
   \bgroup
     % page I
-    \thispagestyle{empty}%
+    %\thispagestyle{empty}%
     \printpageI
     % page II
     \clearpage
-    \thispagestyle{empty}%
+    %\thispagestyle{empty}%
     \printseriesinfo
     \printvolumelist
     % page III
     \clearpage
-    \thispagestyle{empty}%
+    %\thispagestyle{empty}%
     \print@book@title{\@title}%
     \ifx\@transtitle\@undefined
     \else
@@ -1571,7 +1873,7 @@
     \publisherlocationsline
     % page IV
     \clearpage
-    \thispagestyle{empty}%
+    %\thispagestyle{empty}%
     \print@copyrightinfo
     \ifdefined\@isbn
       \print@isbn
@@ -1629,7 +1931,6 @@
   }
 
 %%************************ Copyright, license
-\def\copyrightholder#1{\gdef\@copyrightholder{#1}}
 \AtBeginDocument{%
   \ifx\@copyrightholder\undefined
     \ifx\@openaccess\relax
@@ -1643,10 +1944,10 @@
   \gdef\@copyrightyear{#1}%
   }
 \global\let\@copyrightyear\@pubyear
-\def\@copyrighttext{\copyright\ \@copyrightyear\space --\space\@copyrightholder. All rights reserved}
-\def\book@copyrightline{%
-  \copyright\ \@copyrightyear\ \@copyrightholder.%
-  }
+\def\copyright@sign{\copyright}
+\def\copyright@delim{--\space}
+\def\book@copyrightline{\copyright@sign\space\the@copyear\space\copyright@delim\@copyrightholder}
+\def\@copyrighttext{\book@copyrightline. All rights reserved}
 \def\book@copyrighttext{%
   All rights reserved. No part of this book may be reproduced,
   stored in a retrieval system, or transmitted, in any form
@@ -1666,7 +1967,12 @@
   \bgroup
     \parindent=0\p@
     \@ixfontsize
-    \book@copyrightline
+    \bgroup
+      \advance\@copyear 2000\relax
+      \def\the@copyear{\the\@copyear}%
+      \def\copyright@delim{}%
+      \book@copyrightline.%
+    \egroup
     \vskip9\p@
     \book@copyrighttext
     \par
@@ -1695,8 +2001,6 @@
 \newcommand\sep{\unskip, }
 \newcommand\acknowledgementsname{Acknowledgements}
 %
-\def\copyright@sign{\copyright}
-%
 % DIMENSIONS
 \def\@articletypesize{\large}
 \def\pretitle@size{\LARGE}
@@ -1704,7 +2008,7 @@
 \def\subtitle@size{\large\itshape}
 \def\authors@size{\normalsize}
 \def\abstract@size{\footnotesize}
-\def\abstract@width{22pc}
+\def\abstract@width{\csname abstract@width@\@jid\endcsname}
 \def\abstract@indent{\noindent}
 \def\address@size{\normalsize\itshape}
 % Block preparation of contents:
@@ -1718,15 +2022,14 @@
   \space\number\day, \number\year}
 %
 \@twosidetrue
+\pagenumbering{arabic}
 \frenchspacing
 \init@settings
 
 \if@twocolumn\setlength\tablewidth{\columnwidth}
 \else\setlength\tablewidth{\textwidth}\fi
-
-\pagestyle{empty}
 %\pagestyle{headings}
-%\thispagestyle{empty}
+\pagestyle{empty}
 
 % p. I
 \def\printpageI{%

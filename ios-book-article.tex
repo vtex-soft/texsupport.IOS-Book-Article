@@ -3,7 +3,6 @@
 
 \usepackage{mathptmx}
 \usepackage{soul}\setuldepth{article}
-
 %\usepackage{times}
 %\normalfont
 %\usepackage[T1]{fontenc}
@@ -15,7 +14,6 @@
 
 \pagestyle{headings}
 \def\thepage{}
-
 \begin{frontmatter}              % The preamble begins here.
 
 
@@ -23,26 +21,24 @@
 \title{Instructions for the Preparation of an\\
 Electronic Camera-Ready Manuscript in\\ \LaTeX}
 
-\markboth{}{June 2021\hb}
+\markboth{}{April 2021\hb}
 %\subtitle{Subtitle}
 
-\author[A]{\fnms{Book Production} \snm{Manager}%
-\thanks{Corresponding Author: Book Production Manager, IOS Press, Nieuwe Hemweg 6B,
-1013 BG Amsterdam, The Netherlands; E-mail:
-bookproduction@iospress.nl.}},
-\author[B]{\fnms{Second} \snm{Author}}
+\author[A]{\fnms{First} \snm{Author}\orcid{....-....-....-....}%
+\thanks{Corresponding Author: Author Name, contact details}},
+\author[B]{\fnms{Second} \snm{Author}\orcid{....-....-....-....}}
 and
-\author[B]{\fnms{Third} \snm{Author}}
+\author[B]{\fnms{Third} \snm{Author}\orcid{....-....-....-....}}
 
 \runningauthor{B.P. Manager et al.}
-\address[A]{Book Department, IOS Press, The Netherlands}
+\address[A]{Short Affiliation of First Author}
 \address[B]{Short Affiliation of Second Author and Third Author}
 
 \begin{abstract}
 These instructions are designed for the Preparation of an Electronic
 Camera-Ready Manuscript in \LaTeX{} and should be read carefully. If you
 have any questions regarding the instructions, please contact the Book
-Department, by \mbox{e-mail}: \textit{bookproduction@iospress.nl}.
+Department through the Contact Form on https://www.iospress.com/contact.
 \end{abstract}
 
 \begin{keyword}
@@ -64,9 +60,10 @@ Press will be almost identical to the final, published version that appears in t
 except for the pagination and the insertion of running headlines. Proofreading as
 regards technical content and English usage is the responsibility of the author.
 
-A template file for \LaTeX2e is available from http://www.iospress.nl/service/authors/\allowbreak latex-and-word-tools-for-book-authors/. \LaTeX{} styles required for the \LaTeX{} template are also
+A template file for \LaTeX2e is available from
+https://www.iospress.com/book-article-instructions. \LaTeX{} styles required for the \LaTeX{} template are also
 available.\footnote{For authors using MS Word separate Instructions as well
-as a Word template are available from http://www.iospress.nl/service/authors/latex-and-word-tools-for-book-authors/.}
+as a Word template are available from https://www.iospress.com/book-article-instructions.}
 
 \section{Typographical Style and Layout}
 
@@ -114,7 +111,7 @@ the heading ``Endnotes''.
 \subsection{References}
 
 Please use the Vancouver citing \& reference system, and the National Library of
-Medicine (NLM) style.
+Medicine (NLM) style, and include the Digital Object Identifier (DOI) if known.
 
 Place citations as numbers in square brackets in the text. All publications cited in
 the text should be presented in a list of references at the end of the manuscript.
@@ -124,31 +121,31 @@ the NLM style:
 \medskip
 \noindent\ul{Journal article:}\par\noindent
 Petitti DB, Crooks VC, Buckwalter JG, Chiu V. Blood pressure levels before dementia.
-Arch Neurol. 2005 Jan;62(1):112-6.
+Arch Neurol. 2005 Jan;62(1):112-6, doi: ....
 
 \medskip
 \noindent\ul{Paper from a proceedings:}\par\noindent
 Rice AS, Farquhar-Smith WP, Bridges D, Brooks JW. Canabinoids and pain. In: Dostorovsky
 JO, Carr DB, Koltzenburg M, editors. Proceedings of the 10th World Congress on Pain;
-2002 Aug 17-22; San Diego, CA. Seattle (WA): IASP Press; c2003. p. 437-68.
+2002 Aug 17-22; San Diego, CA. Seattle (WA): IASP Press; c2003. p. 437-68, doi: ....
 
 \medskip
 \noindent\ul{Contributed chapter in a book:}\par\noindent
 Whiteside TL, Heberman RB. Effectors of immunity and rationale for immunotherapy. In:
 Kufe DW, Pollock RE, Weichselbaum RR, Bast RC Jr, Gansler TS, Holland JF, Frei~E~3rd,
-editors. Cancer medicine 6. Hamilton (ON): BC Decker Inc; 2003. p. 221-8.
+editors. Cancer medicine 6. Hamilton (ON): BC Decker Inc; 2003. p. 221-8, doi: ....
 
 %\medskip
 \smallskip
 \noindent\ul{Book by author(s):}\par\noindent
 Jenkins PF. Making sense of the chest x-ray: a hands-on guide. New York: Oxford
-University Press; 2005. 194 p.
+University Press; 2005. 194 p., doi: ....
 
 %\medskip
 \smallskip
 \noindent\ul{Edited book:}\par\noindent
 Izzo JL Jr, Black HR, editors. Hypertension primer: the essentials of high blood pressure.
-3rd ed. Philadelphia: Lippincott Williams \& Wilkins; c2003. 532 p.
+3rd ed. Philadelphia: Lippincott Williams \& Wilkins; c2003. 532 p., doi: ....
 
 %\medskip
 \smallskip
@@ -156,7 +153,7 @@ Izzo JL Jr, Black HR, editors. Hypertension primer: the essentials of high blood
 Ferreira de Oliveira MJ, editor. Accessibility and quality of health services. Proceedings of
 the 28th Meeting of the European Working Group on Operational Research Applied to Health
 Services (ORAHS); 2002 Jul 28-Aug 2; Rio de Janeiro, Brazil. Frankfurt (Germany): Peter Lang;
-c2004. 287 p.
+c2004. 287 p., doi: ....
 
 \vspace*{6pt}
 If your bibliography is structured in the BibTeX format, loading your *.bib file and the provided  BibTeX style vancouver.bst allows you to get the final format of the bibliography. Please note that the bibtex program should be used to generate the *.bbl file.
@@ -248,12 +245,12 @@ one version of any item.
 
 \bibitem{r1}
 Petitti DB, Crooks VC, Buckwalter JG, Chiu V. Blood pressure levels before dementia.
-Arch Neurol. 2005 Jan;62(1):112-6.
+Arch Neurol. 2005 Jan;62(1):112-6, doi: ....
 
 \bibitem{r2}
 Rice AS, Farquhar-Smith WP, Bridges D, Brooks JW. Canabinoids and pain. In: Dostorovsky JO,
 Carr DB, Koltzenburg M, editors. Proceedings of the 10th World Congress on Pain;  2002 Aug
-17-22; San Diego, CA. Seattle (WA): IASP Press; c2003. p. 437-68.
+17-22; San Diego, CA. Seattle (WA): IASP Press; c2003. p. 437-68, doi: ....
 
 \end{thebibliography}
 \end{document}
