@@ -39,7 +39,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2022/05/13 v1.17, IOS Press, VTEX]
+              [2022/05/26 v1.18, IOS Press, VTEX]
 
 \IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
 
@@ -975,7 +975,7 @@
   \ifnum\note@cnt>\@ne
     \add@xtok\t@loc@notes{\note@sep}%
   \fi
-  \add@tok\t@loc@notes{\ref{#1}}%
+  \add@tok\t@loc@notes{\ref{\MakeLowercase{#1}}}%
   }
 \def\note@sep{,}
 %
