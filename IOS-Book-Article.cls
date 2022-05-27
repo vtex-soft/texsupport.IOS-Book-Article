@@ -39,14 +39,55 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2022/05/26 v1.18, IOS Press, VTEX]
+              [2022/05/27 v1.19, IOS Press, VTEX]
 
-\IfFileExists{iosbookcenter.sty}{\xdef\vtex@in@house{1}}{}
+\IfFileExists{IOS-Book-Article.cfg}{\xdef\vtex@in@house{1}}{}
 
-\usepackage{ifpdf}
-\ifpdf\else
-  \usepackage{luafonts}
-\fi
+\def\@textwidth{124mm}
+\def\@textheight{200mm}
+\def\paper@width{210mm}
+\def\paper@height{297mm}
+
+% HEADS:
+\setlength\headheight{12\p@}
+\setlength\headsep   {15\p@}
+\setlength\topskip   {10\p@}
+\setlength\footskip  {25\p@}
+\setlength\maxdepth  {.5\topskip}
+
+\@tempdima=\paper@width
+\advance\@tempdima by-\@textwidth
+\divide\@tempdima by2
+\edef\@evensidemargin{\the\@tempdima}%
+\edef\@oddsidemargin{\the\@tempdima}%
+
+\@tempdima=\paper@height
+\advance\@tempdima by-\@textheight
+\advance\@tempdima by-\headsep
+\advance\@tempdima by-\headheight
+\divide\@tempdima by2
+\edef\@topmargin{\the\@tempdima}%
+
+\def\@abstract@width{22pc}
+
+\def\copyright@oddhead {\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
+\def\copyright@evenhead{\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
+
+% Information about the publication
+\def\booktitle#1{%
+  \AtBeginDocument{%
+    \gdef\book@title{#1}%
+    }%
+  }
+\def\bookeditors#1{\gdef\book@editors{#1}}
+\def\publisher#1{\gdef\@publisher{#1}}
+
+\def\copyrightholder#1{\xdef\@copyrightholder{#1}}
+
+%\booktitle{Book Title}
+\gdef\book@title{Book Title}
+\bookeditors{Book Editors}
+\publisher{IOS Press}
 
 %% in case of tex4ht wf all processing is redirected to the class iosbook2x.cls, this class (IOS-Book-Article.cls) acts just as an ordinary project driver class 
 \ifdefined\HCode
@@ -67,13 +108,11 @@
     \usepackage{etoolbox}%
   \fi
 \fi
+
+\InputIfFileExists{IOS-Book-Article.cfg}{}{}
+
 \RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
 
-\newif\ifcheck@lpage
-\ifdefined\vtex@in@house
-  \usepackage{vtex-ltxext}%
-  \usepackage{vtex-checklpage}%
-\fi
 \usepackage{environ}
 
 \newif\if@restonecol \@restonecolfalse
@@ -108,96 +147,13 @@
 \DeclareOption{spanish}{\AtBeginDocument{\def\languagename{spanish}}}
 \DeclareOption{french}{\AtBeginDocument{\def\languagename{french}}}
 
-% Information about the publication
-\def\booktitle#1{%
-  \AtBeginDocument{%
-    \gdef\book@title{#1}%
-    }%
-  }
-\def\bookeditors#1{\gdef\book@editors{#1}}
-\def\publisher#1{\gdef\@publisher{#1}}
+\InputIfFileExists{IOS-Book-Article-options.cfg}{}{}
 
-\def\copyrightholder#1{\xdef\@copyrightholder{#1}}
-
-%\booktitle{Book Title}
-\gdef\book@title{Book Title}
-\bookeditors{Book Editors}
-\publisher{IOS Press}
-
-\gdef\@jid{default}
-\DeclareOption{george}{\gdef\@jid{george}}
-
-\newif\ifreprint@init \reprint@inittrue
-\DeclareOption{reprint}{\reprint@inittrue}
-\DeclareOption{noreprint}{\reprint@initfalse}
-
-\ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn,reprint}
+\ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn}
 \ProcessOptions*
 %
 
-% >>>>>>>>>>>>>>>>>>>>>>>>>> project specific data
-
-
-% -------------------------------- default
-% Text dimensions
-\def\textwidth@default{124mm}
-\def\textheight@default{200mm}
-\def\abstract@width@default{22pc}
-\def\oddsidemargin@default{\dimexpr(\paper@width-\textwidth@default)/2\relax}
-\let\evensidemargin@default\oddsidemargin@default
-\def\topmargin@default{\dimexpr(\paper@height-\textheight@default-\headsep-\headheight)/2\relax}
-
-% Information about the publication
-%\def\book@title@default{Book Title}
-\def\book@editors@default{Book Editors}
-\def\@copyrightholder@default{The author}
-
-\def\init@default@settings{%
-  \reprint@initfalse
-  }
-\ifdefined\vtex@in@house
-  \appto\init@default@settings{%
-    \check@lpagefalse
-    }
-\fi
-
-% -------------------------------- george
-% Text dimensions
-\def\textwidth@george{160mm}
-\def\textheight@george{210mm}
-\def\abstract@width@george{130mm}
-\def\oddsidemargin@george{23mm}
-\def\evensidemargin@george{27mm}
-\def\topmargin@george{37mm}% should be 39mm actually, real is 2mm bigger somehow
-
-% Information about the publication
-\def\book@title@george{Stem Cells and Regenerative Medicine}%
-\def\book@editors@george{D. George et al. (Eds.)}%
-\def\@copyrightholder@george{The authors and IOS Press}
-
-\def\init@george@settings{%
-  \RequirePackage{times}%
-  \RequirePackage{mathtime}%
-  %
-  \AtBeginDocument{%
-    \pagestyle{copyright}%
-    }%
-  }
-\ifdefined\vtex@in@house
-  \appto\init@george@settings{%
-    \check@lpagetrue
-    }%
-\fi
-
-% ------------------------------
-\ifcsdef{book@title@\@jid}
-  {\booktitle{\csname book@title@\@jid\endcsname}}{}
-\bookeditors{\csname book@editors@\@jid\endcsname}
-\copyrightholder{\csname @copyrightholder@\@jid\endcsname}%
-
-\@nameuse{init@\@jid @settings}
-
-% <<<<<<<<<<<<<<<<<<<<<<<< project specific data
+\InputIfFileExists{IOS-Book-Article-tail.cfg}{}{}
 
 %************************* FONTS
 %\def\@xivpt{14}
@@ -257,9 +213,9 @@
 % TEXT DIMENSIONS
 \setlength\parindent{18\p@}
 \@settopoint\parindent
-\setlength\textwidth{\csname textwidth@\@jid\endcsname}
+\setlength\textwidth{\@textwidth}
 \@settopoint\textwidth
-\setlength\textheight{\csname textheight@\@jid\endcsname}
+\setlength\textheight{\@textheight}
 \@settopoint\textheight
 \setlength\columnsep{10mm}
 \@settopoint\columnsep
@@ -269,12 +225,6 @@
 \hoffset -0.5cm
 \voffset -1cm
 
-% HEADS:
-\setlength\headheight{12\p@}
-\setlength\headsep   {15\p@}
-\setlength\topskip   {10\p@}
-\setlength\footskip  {25\p@}
-\setlength\maxdepth  {.5\topskip}
 % SIDE MARGINS
 \setlength\oddsidemargin   {0mm}
 \setlength\evensidemargin  {0mm}
@@ -288,16 +238,16 @@
 
 % Center on A4:
 
-\def\paper@width {210mm}
-\def\paper@height{297mm}
+\paperwidth=\paper@width\relax
+\paperheight=\paper@height\relax
 
 \hoffset=-1in
 \voffset=-1in
 
-\setlength\evensidemargin{\csname evensidemargin@\@jid\endcsname}
-\setlength\oddsidemargin{\csname oddsidemargin@\@jid\endcsname}
+\setlength\evensidemargin{\@evensidemargin}
+\setlength\oddsidemargin{\@oddsidemargin}
 
-\setlength\topmargin{\csname topmargin@\@jid\endcsname}%
+\setlength\topmargin{\@topmargin}%
 
 %************************* LOADING PACKAGES:
 \let\begin@orig\begin
@@ -442,13 +392,8 @@
 % First page RH
 \def\ps@copyright{%
   \let\@mkboth\@gobbletwo
-  \ifreprint@init
-    \def\@oddhead{\rh@hook\hfill{\footnotesize\thepage}}%
-    \def\@evenhead{\rh@hook{\footnotesize\thepage}\hfill}%
-  \else
-    \def\@oddhead {\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
-    \def\@evenhead{\parbox[t]{.75\textwidth}{\footnotesize\raggedright\itshape\titleheadline}\hfill\footnotesize\thepage}%
-  \fi
+  \def\@oddhead{\copyright@oddhead}%
+  \def\@evenhead{\copyright@evenhead}%
   \let\@oddfoot\relax%
   \let\@evenfoot\@oddfoot%
   }
@@ -469,41 +414,6 @@
     \@issn/\the@copyear/\$\@price\space\book@copyrightline
   \egroup
   }%
-
-\def\restore@rh{\gdef\rh@hook{}}
-\restore@rh
-
-\ifreprint@init
-  % reprint heading
-  \newbox\reprint@box
-  \AtBeginDocument{%
-    \global\setbox\reprint@box\vbox{%
-      \vskip-6pt\relax
-      \ifodd\c@page\else
-        \raggedleft
-      \fi
-      \parindent=0pt\relax
-      \footnotesize\itshape
-      \titleheadline\\
-      \bgroup
-        \advance\@copyear 2000\relax
-        \def\the@copyear{\the\@copyear}%
-        \def\copyright@delim{}%
-        \@copyrighttext.\par
-      \egroup
-      doi:\@DOI\par
-      }%
-    \ht\reprint@box\z@
-    \dp\reprint@box\z@
-    \wd\reprint@box\z@
-    %
-    \pagestyle{copyright}%
-    }%
-  \appto\rh@hook{%
-    \box\reprint@box
-    \restore@rh
-    }%
-\fi
 
 % ************************ FOOTNOTE
 %
@@ -1646,11 +1556,12 @@
 \def\write@last@page{%
   \write\@mainaux{\string\global\string\@namedef{@lastpage}{\the\c@page}}%
   }
-\AtEndDocument{%
-  \ifcheck@lpage\else
+
+\ifdefined\vtex@in@house\else
+  \AtEndDocument{%
     \write@last@page
-  \fi
-  }
+    }
+\fi
 
 % SGML
 \long\def\convertas#1#2{#2}
@@ -2008,7 +1919,7 @@
 \def\subtitle@size{\large\itshape}
 \def\authors@size{\normalsize}
 \def\abstract@size{\footnotesize}
-\def\abstract@width{\csname abstract@width@\@jid\endcsname}
+\def\abstract@width{\@abstract@width}
 \def\abstract@indent{\noindent}
 \def\address@size{\normalsize\itshape}
 % Block preparation of contents:
