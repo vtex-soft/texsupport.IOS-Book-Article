@@ -41,7 +41,7 @@
 \ProvidesClass{IOS-Book-Article}
               [2022/05/27 v1.19, IOS Press, VTEX]
 
-\IfFileExists{IOS-Book-Article.cfg}{\xdef\vtex@in@house{1}}{}
+\InputIfFileExists{IOS-Book-Article.cfg}{}{}
 
 \def\@textwidth{124mm}
 \def\@textheight{200mm}
@@ -109,7 +109,7 @@
   \fi
 \fi
 
-\InputIfFileExists{IOS-Book-Article.cfg}{}{}
+\csuse{IOS@Book@Article@init}
 
 \RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
 
@@ -147,13 +147,20 @@
 \DeclareOption{spanish}{\AtBeginDocument{\def\languagename{spanish}}}
 \DeclareOption{french}{\AtBeginDocument{\def\languagename{french}}}
 
-\InputIfFileExists{IOS-Book-Article-options.cfg}{}{}
+\csuse{IOS@Book@Article@options}
 
 \ExecuteOptions{10pt,onecolumn,twoside,final,openright,fleqn}
 \ProcessOptions*
 %
 
-\InputIfFileExists{IOS-Book-Article-tail.cfg}{}{}
+\def\IOS@Book@Article@setmainfont{%
+  \renewcommand\encodingdefault{OT1}%
+  \renewcommand\rmdefault{cmr}%
+  \renewcommand\sfdefault{cmss}%
+  \renewcommand\ttdefault{cmtt}%
+  }
+
+\csuse{IOS@Book@Article@tail}
 
 %************************* FONTS
 %\def\@xivpt{14}
@@ -2014,6 +2021,8 @@
   {\fontsize{26}{30}\selectfont #1}%
   \after@title@fmt
   }
+
+\IOS@Book@Article@setmainfont
 
 \endinput
 %%
