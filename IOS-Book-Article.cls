@@ -39,7 +39,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{IOS-Book-Article}
-              [2022/05/27 v1.19, IOS Press, VTEX]
+              [2024/01/31 v1.20, IOS Press, VTEX]
 
 \InputIfFileExists{IOS-Book-Article.cfg}{}{}
 
@@ -1589,6 +1589,8 @@
 %
 \def\openaccess{\global\let\@openaccess\relax}
 \def\openaccessbook{\global\let\@openaccessbook\relax}
+\def\openaccessby{\global\let\@openaccessby\relax}
+\def\openaccessbookby{\global\let\@openaccessbookby\relax}
 \let\freelicensetime\@gobble % needed for packing tool
 
 %%**************** Book frontmatter
