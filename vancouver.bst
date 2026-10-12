@@ -95,7 +95,7 @@ FUNCTION {init.config.constants}
   "http://dx.doi.org/" 'doiurl := % prefix to make URL from DOI
   "doi:" 'doiprefix := % text prefix printed before DOI ref
   #0 'addeprints := % 0=no eprints; 1=include eprints
-  #0 'adddoiresolver := % 0=no DOI resolver; 1=include it
+  #1 'adddoiresolver := % 0=no DOI resolver; 1=include it
   #0 'hrefform := % 0=no crossrefs; 1=hypertex xrefs; 2=hyperref refs
 }
 INTEGERS {
