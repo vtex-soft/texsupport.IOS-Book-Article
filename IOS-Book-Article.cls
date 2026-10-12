@@ -114,6 +114,7 @@
 \RequirePackage[colorlinks=true,urlcolor=black,anchorcolor=black,citecolor=black,linkcolor=black]{hyperref}
 
 \usepackage{environ}
+\usepackage{hyperref}
 
 \newif\if@restonecol \@restonecolfalse
 \newif\if@openright
@@ -1439,8 +1440,11 @@
       \ifcsdef{fnms@##1}{\space}{}%
       \csuse{snm@##1}%
       \ifcsdef{snm@##1}{\space}{}%
-      \ead@hrefprefix@orcid
-      \csuse{orcid@##1}%
+      %\ead@hrefprefix@orcid
+      %\csuse{orcid@##1}%
+      \href{\ead@hrefprefix@orcid
+      \csuse{orcid@##1}}{
+      \csuse{orcid@##1}}%
       }{}%
     }%
   \if.\orcid@present.\else
